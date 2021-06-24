@@ -1,0 +1,129 @@
+STEP 10 
+
+R Code for Final Multivariate Logistic Regression 
+		
+*************************************************************************************************
+##Reading Data
+```{r}
+options(max.print=999999999)
+options(warn=-1)
+library(caret)
+library(readstata13)
+data2<-read.dta13(file = "Y:/Haroon Janjua/Project_ElectiveSurg_Deaths/Data/AHCA_Compare_2016_2019_V2.dta")
+
+
+# looking at the dimensions of the dataset
+dim(data2)
+
+# looking at any missing values in our dataset
+sum(is.na(data2))
+
+
+# Converting all the variables of the dataset into categorical variables 
+data2[c(1:5)] <- lapply(data2[,c(1:5)] , factor)
+
+# taking a look at the structure of the varaibles in the dataset
+str(data2[1:5])
+
+#tabulating the outcome variable
+print(table(data2$mortality))
+
+print(prop.table(table(data2$mortality)))
+
+
+outcomeName <- 'mortality'
+
+# Splitting the dataset into Training and testing datasets to train and test the model performance
+# split data2 into a train and a test set; train, test, and model. The train and test split is 70/30
+set.seed(1234)
+splitIndex <- createDataPartition(data2[,outcomeName], p = .70, list = FALSE, times = 1)
+train_data <- data2[ splitIndex,]
+test_data  <- data2[-splitIndex,]
+
+
+nrow(train_data)
+# 4760 observations pertain to the training data set.
+
+nrow(test_data)
+# 2038 observations pertain to the testing/evaluation data set.
+
+#tabulating the outcome variable for overall, training and testing data
+
+print(table(data2$mortality))
+
+print(prop.table(table(data2$mortality)))
+
+print(prop.table(table(train_data$mortality)))
+print(prop.table(table(test_data$mortality)))
+
+
+```
+## Running a Logisitc Regression Model 
+```{r}
+options(warn=-1)
+library(caret)
+library(party)
+library(ROCR)
+library(pROC)
+library(finalfit)
+library(dplyr)
+library(gtsummary)
+library(xlsx)
+library(rJava)
+library(broom)
+library(margins)
+
+
+#  Running the Generalized Logistic Regression on Training data set
+set.seed(123)
+model.logit.data <- glm(mortality ~ Hospital_Rating+Comp_Readmission+Age_Cat+LOS,
+               data = train_data,
+                              family="binomial")
+
+#Looking at the model summary  
+summary(model.logit.data)
+
+## Number of predictors in final model
+length(attr(model.logit.data$terms, "term.labels"))
+
+confint(model.logit.data)
+
+## odds ratios and 95% CI
+odds.ratios<-exp(cbind(OR = coef(model.logit.data), confint(model.logit.data)));odds.ratios
+
+OR<-tbl_regression(model.logit.data, exponentiate = TRUE); OR
+
+# Looking at the vector of most important variables from the model
+varImp(model.logit.data)
+
+#next step is to use the predict function to predict the above training model based on the testing data.
+set.seed(3166)
+pred.model.logit <- predict(model.logit.data, test_data, type = "response")
+pred.model.logit <- as.integer(pred.model.logit>0.5)
+
+# From the result of the above we make a table just to check the how the model performed 
+table(pred.model.logit,test_data$mortality)
+
+# make a confusion matrix stats to evaluate and look at the other performance indicators of the model
+confusion.Matrix <- confusionMatrix(as.factor(pred.model.logit),test_data$mortality); confusion.Matrix
+
+cm <- data.frame(cbind(t(confusion.Matrix$overall),t(confusion.Matrix$byClass))) ; cm 
+
+
+# Prediction with probabilities, this shall be used to draw the ROC curve 
+set.seed(3166)
+p.2<-predict(model.logit.data, newdata = test_data, type = "response", se.fit = FALSE)
+
+# Calculating the ROC 95% confidence intervals for our  model. the output also displays the area under the curve
+roc.data<-roc(test_data$mortality,p.2, auc = T, ci = T) ;roc.data
+
+#Plotting the ROC Curve 
+ggroc(roc.data, colour = 'steelblue', size = 2) +
+  ggtitle(paste0('ROC Curve ', '(AUC = ', round((roc.data$auc),3), ')'))+
+geom_abline(intercept=1, slope = 1, color="red", linetype="dashed")
+
+
+
+
+
+```

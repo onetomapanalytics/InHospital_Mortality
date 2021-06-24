@@ -1,0 +1,194 @@
+STEP 4
+ 
+The combined yeaarly master files from FL AHCA 2016-2019 was merged with Hospital Compare data on a year to year basis. 
+
+
+
+**************************************************************************************************
+*FL AHCA 2016
+
+use "file path 2016 Data"
+
+keep if YEAR == 2016 
+
+save "file path 2016 Data", replace 
+***********************************************************************************
+*FL AHCA 2017
+
+use "file path 2017 Data"
+
+keep if YEAR == 2017 
+
+save "file path 2017 Data", replace 
+**********************************************************************************
+*FL AHCA 2018
+
+use "file path 2018 Data"
+
+keep if YEAR == 2018 
+
+save "file path 2018 Data", replace 
+***********************************************************************************
+*FL AHCA 2019
+
+use "file path 2019 Data"
+
+keep if YEAR == 2019 
+
+save "file path 2019 Data", replace 
+***********************************************************************************
+*Merging with Hospital Compare all the above files one by one 
+
+use "file path AHCA yearly data"
+
+drop _merge 
+
+merge m:1 MCARE_NBR using "Hopital Compare Yearly data file "
+
+keep if _merge == 3  
+
+codebook MCARE_NBR
+
+tab DISCHSTAT
+
+save "file path to merged data ", replace 
+
+**********************************************************************************
+**********************************************************************************
+
+*One all the yearly files were merged sucessfully, then a master file was created by appending all the files 
+
+use "file path to merged data "
+append using "file path to merged data "
+append using "file path to merged data "
+append using "file path to merged data "
+
+drop _merge x x idx_pr x2 idx_pr2 time description_ICD9 PRINPROC2 ID ID2 x3 idx_PR Total_Death ICD1_10 phonenumber ICD_main2 Age_Cat TYPE_SERV
+
+codebook PRINPROC
+
+tab ADMSRC
+
+	  
+keep if ADMSRC == "01" | ADMSRC == "02"
+
+
+*Generating Counts of Each Procedure 
+egen x = count(1), by(PRINPROC) 
+
+sort PRINPROC
+
+by PRINPROC: gen idx_pr = _n == 1
+
+gsort -x
+
+* ADDING THE TOTAL DEATHS FOR each PROCEDURES
+bysort PRINPROC: egen Deaths= sum(DISCHSTAT == "20" ) 
+
+gsort -Deaths
+
+drop if Deaths == 0 
+
+drop x idx_pr Deaths
+
+codebook PRINPROC
+
+*Generating Counts of Each Procedure 
+egen x = count(1), by(PRINPROC) 
+
+sort PRINPROC
+
+by PRINPROC: gen idx_pr = _n == 1
+
+gsort -x
+
+* ADDING THE TOTAL DEATHS FOR each PROCEDURES
+bysort PRINPROC: egen Deaths= sum(DISCHSTAT == "20" ) 
+
+gsort -Deaths
+
+
+summarize AGE
+
+gen Age1 = 1 if AGE <=30
+replace Age1 = 2 if AGE >=31 & AGE <=50
+replace Age1 = 3 if AGE >= 51 & AGE <=70
+replace Age1 = 4 if AGE >= 71 & AGE <=90
+replace Age1 = 5 if AGE >= 91
+
+tab Age1
+rename Age1 Age_Cat
+
+
+tab Comp_Mortality 
+
+replace Comp_Mortality = "A_Same as the national average" if Comp_Mortality == "Same as the national average"
+
+replace Comp_SafetyofCare = "A_Same as the national average" if Comp_SafetyofCare == "Same as the national average"
+
+replace Comp_Readmission = "A_Same as the national average" if Comp_Readmission == "Same as the national average"
+
+replace Comp_Patient_Exp = "A_Same as the national average" if Comp_Patient_Exp == "Same as the national average"
+
+replace Comp_CareEffectiveness = "A_Same as the national average" if Comp_CareEffectiveness == "Same as the national average"
+
+replace Comp_CareTimeliness = "A_Same as the national average" if Comp_CareTimeliness == "Same as the national average"
+
+replace Comp_ImagingEffectivenss = "A_Same as the national average" if Comp_ImagingEffectivenss == "Same as the national average"
+ 
+tab Comp_Mortality 
+tab Comp_SafetyofCare 
+tab Comp_Readmission 
+tab Comp_Patient_Exp 
+tab Comp_CareEffectiveness 
+tab Comp_CareTimeliness 
+tab Comp_ImagingEffectivenss 
+ 
+ 
+tab hospitalownership 
+
+*tab  DISCHSTAT if hospitaltype == "Acute Care Hospitals"
+
+drop CONGESTIVE_H_FAILURE
+
+order LOSDAYS ADMSRC PVD MI METS CHF DMCX STROKE CANCER RESPIRATORY_FAILURE SEPSIS ACUTE_RENAL_FAILURE OTHER_FLUID_DISORDERS PLEURAL_EFFUSION CARDIAC_ARRHYTHMIA PRINPROC mortality, first 
+
+
+codebook MCARE_NBR 
+
+codebook PRINPROC
+
+drop description PRINPROC DAYSPROC YEAR QTR PRINDIAG FACLNBR FAC_NAME DISCHSTAT ZIPCODE OPER_PHYID ICD_main hospitalname address city state zipcode countyname x idx_pr Deaths AGE
+
+order mortality DISCHARGES LOSDAYS SYS_RECID MCARE_NBR, last 
+
+summarize LOSDAYS
+
+
+gen LOS = 0 if LOSDAYS <=0
+replace LOS = 1 if LOSDAYS >=1 & LOSDAYS <=5
+replace LOS = 2 if LOSDAYS >=6 & LOSDAYS <=10
+replace LOS = 3 if LOSDAYS >= 11 & LOSDAYS <=15
+replace LOS = 4 if LOSDAYS >= 16 & LOSDAYS <=20
+replace LOS = 5 if LOSDAYS >= 21 & LOSDAYS <=25
+replace LOS = 6 if LOSDAYS >= 26
+
+tab LOS
+
+drop LOSDAYS
+
+order mortality DISCHARGES SYS_RECID MCARE_NBR, last 
+
+tab DISCHSTAT if YEAR == 2016 
+
+tab DISCHSTAT if YEAR == 2017
+
+tab DISCHSTAT if YEAR == 2018 
+
+tab DISCHSTAT if YEAR == 2019 
+
+tab DISCHSTAT
+
+save "file path", replace 
+**************************************************************************************************
+

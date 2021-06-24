@@ -1,0 +1,47 @@
+STEP 6 
+
+Univariate Analaysis for the propensity matched data 
+
+**************************************************************************************************
+use "file path"
+
+*Univariate analayis was performed on patient factors and hospital factors 
+
+set sortseed 2038947
+sort MCARE_NBR
+* the first obs is always an index
+by MCARE_NBR: gen ID_H = _n == 1
+by MCARE_NBR: gen ID2_H = _n 
+
+tab ID_H
+tab mortality if ID_H == 1 
+
+tab Age1 mortality, row col chi2 
+
+tab LOS mortality, row col chi2 
+***********************************************************************
+*ID_H over here enables to look at the hospitals onlys 
+
+tab MOD_CODE mortality if ID_H == 1, row col chi2 
+
+tab hospitaltype mortality if ID_H == 1, row col chi2 
+
+tab hospitalownership mortality if ID_H == 1, row col chi2 
+
+tab emergencyservices mortality if ID_H == 1, row col chi2 
+
+tab Hospital_Rating mortality if ID_H == 1, row col chi2 
+
+tab Comp_Mortality mortality if ID_H == 1, row col chi2 
+
+tab Comp_SafetyofCare mortality if ID_H == 1, row col chi2 
+
+tab Comp_Readmission mortality if ID_H == 1, row col chi2 
+
+tab Comp_Patient_Exp mortality if ID_H == 1, row col chi2 
+
+tab Comp_CareEffectiveness mortality if ID_H == 1, row col chi2 
+
+tab Comp_CareTimeliness mortality if ID_H == 1, row col chi2 
+
+tab Comp_ImagingEffectivenss mortality if ID_H == 1, row col chi2 

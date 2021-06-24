@@ -1,0 +1,82 @@
+STEP 7 
+
+Calculating the Mean deah incidence for Hopsitals based on their star Ratings
+
+Mean Death Incidence is summarized stats for all hospitals within each start rating category 
+
+This is part of supplemental calculations						
+*************************************************************************************************
+use "file path"
+
+tab YEAR 
+
+set sortseed 2038947
+sort MCARE_NBR
+* the first obs is always an index
+by MCARE_NBR: gen ID_H = _n == 1
+by MCARE_NBR: gen ID2_H = _n 
+
+tab ID_H 
+
+********************************************************************************
+tab ID_H Hospital_Rating 
+
+gen H_R = 1 if Hospital_Rating == "1"  & ID_H == 1 
+
+replace H_R = 2 if Hospital_Rating == "2"  & ID_H == 1 
+replace H_R = 3 if Hospital_Rating == "3"  & ID_H == 1 
+replace H_R = 4 if Hospital_Rating == "4"  & ID_H == 1 
+replace H_R = 5 if Hospital_Rating == "5"  & ID_H == 1 
+
+tab H_R 
+
+* ADDING THE TOTAL DEATHS FOR each PROCEDURES
+bysort  MCARE_NBR: egen PR_sum= sum(ADMSRC == "01" | ADMSRC == "02")  
+
+* ADDING THE TOTAL DEATHS FOR each PROCEDURES
+bysort  MCARE_NBR: egen Death_sum= sum(DISCHSTAT == "20")  
+
+* ADDING THE TOTAL DEATHS FOR each PROCEDURES
+bysort  MCARE_NBR: egen Adm_sum= sum(PR_sum) if H_R == 1 |H_R == 2 |H_R == 3 |H_R == 4 |H_R == 5  
+
+egen Adm_sum1= sum(PR_sum) if ID_H == 1 & H_R == 1 
+egen Adm_sum2= sum(PR_sum) if ID_H == 1 & H_R == 2
+egen Adm_sum3= sum(PR_sum) if ID_H == 1 & H_R == 3
+egen Adm_sum4= sum(PR_sum) if ID_H == 1 & H_R == 4
+egen Adm_sum5= sum(PR_sum) if ID_H == 1 & H_R == 5
+
+replace Adm_sum1 = Adm_sum2  if ID_H == 1 & H_R == 2
+replace Adm_sum1 = Adm_sum3  if ID_H == 1 & H_R == 3
+replace Adm_sum1 = Adm_sum4  if ID_H == 1 & H_R == 4
+replace Adm_sum1 = Adm_sum5  if ID_H == 1 & H_R == 5
+
+drop Adm_sum2 Adm_sum3 Adm_sum4 Adm_sum5
+
+egen Death_sum1= sum(Death_sum) if ID_H == 1 & H_R == 1 
+egen Death_sum2= sum(Death_sum) if ID_H == 1 & H_R == 2
+egen Death_sum3= sum(Death_sum) if ID_H == 1 & H_R == 3
+egen Death_sum4= sum(Death_sum) if ID_H == 1 & H_R == 4
+egen Death_sum5= sum(Death_sum) if ID_H == 1 & H_R == 5
+
+replace Death_sum1 = Death_sum2  if ID_H == 1 & H_R == 2
+replace Death_sum1 = Death_sum3  if ID_H == 1 & H_R == 3
+replace Death_sum1 = Death_sum4  if ID_H == 1 & H_R == 4
+replace Death_sum1 = Death_sum5  if ID_H == 1 & H_R == 5
+
+drop Death_sum2 Death_sum3 Death_sum4 Death_sum5
+
+gen Mean_Death = . 
+
+replace Mean_Death = Death_sum/PR_sum if  ID_H == 1
+
+order MCARE_NBR Hospital_Rating PR_sum Death_sum Adm_sum1 Death_sum1 Mean_Death, first 
+
+summarize Mean_Death if ID_H == 1 & H_R == 1 
+
+summarize Mean_Death if ID_H == 1 & H_R == 2 
+
+summarize Mean_Death if ID_H == 1 & H_R == 3 
+
+summarize Mean_Death if ID_H == 1 & H_R == 4 
+
+summarize Mean_Death if ID_H == 1 & H_R == 5 

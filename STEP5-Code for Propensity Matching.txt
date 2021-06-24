@@ -1,0 +1,77 @@
+STEP 5 
+
+the two groups of data (deceased and alive were propensity matched 1:2) using R 
+
+**************************************************************************************************
+#Reading the Dataset
+```{r}
+options(max.print=999999999)
+library(tableone)
+library(MatchIt)
+library(Matching)
+library(logitnorm)
+library(readstata13)
+
+data1<-read.dta13(file ="file path")
+
+
+# looking at the dimensions of the dataset
+dim(data1)
+
+# looking at any missing values in our dataset
+sum(is.na(data1))
+
+# Converting all the variables of the dataset into categorical variables and numeric types
+data1$LOSDAYS <- as.numeric(data1$LOSDAYS)
+data1[c(2:17)] <- lapply(data1[,c(2:17)] , as.factor)
+# look at data structure
+str(data1[1:17])
+
+print(table(data1$mortality))
+
+print(prop.table(table(data1$mortality)))
+
+#covariates we will use (shorter list than you would use in practice)
+xvars<-c("LOSDAYS","ADMSRC","PVD","MI","METS","CHF","DMCX","STROKE","CANCER","RESPIRATORY_FAILURE","SEPSIS","ACUTE_RENAL_FAILURE","OTHER_FLUID_DISORDERS","PLEURAL_EFFUSION","CARDIAC_ARRHYTHMIA","PRINPROC")
+
+#look at a table 1 Pre Propensity Matching
+table1<- CreateTableOne(vars=xvars,strata="mortality", data=data1, test=FALSE)
+## include standardized mean difference (SMD)
+print(table1,smd=TRUE)
+```
+#propensity score matching
+```{r}
+#fit a propensity score model. logistic regression
+set.seed(1123)
+psmodel<-glm(mortality ~ LOSDAYS+ADMSRC+PVD+MI+METS+CHF+DMCX+STROKE+CANCER+RESPIRATORY_FAILURE+SEPSIS+ACUTE_RENAL_FAILURE+OTHER_FLUID_DISORDERS+PLEURAL_EFFUSION+CARDIAC_ARRHYTHMIA+PRINPROC,
+    family=binomial(),data=data1)
+
+
+#show coefficients Summary
+summary(psmodel)
+
+#create propensity score
+pscore<-psmodel$fitted.values
+```
+#do greedy matching on logit(PS) using Match without a caliper and Without Replacement
+```{r}
+library(Matching)
+set.seed(1223)
+psmatch<-Match(Tr=data1$mortality == "1",M=2,X=logit(pscore),replace=FALSE)
+
+matched<-data1[unlist(psmatch[c("index.treated","index.control")]), ]
+
+library(foreign)
+save.dta13(matched,file = "file path")
+
+data2<-read.dta13(file ="file path")
+
+print(table(data2$mortality))
+
+print(prop.table(table(data2$mortality)))
+
+#get standardized differences
+matchedtab1<-CreateTableOne(vars=xvars,strata ="mortality",data=data2, test = FALSE)
+print(matchedtab1, smd = TRUE)
+
+```

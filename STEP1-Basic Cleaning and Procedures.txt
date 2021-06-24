@@ -1,0 +1,39 @@
+STEP 1 
+Code for Basic Data cleaning and Data Prep to capture Elective Procedures in Year 2016-2019 
+Code was repeated on all the Individual yearly files 2016-2019
+
+*********************************************************************
+
+*FL AHCA 2016
+
+use "file path 2016 Data"
+
+drop _merge
+
+rename *, upper  
+
+
+replace PRINDIAG = subinstr(PRINDIAG, ".", "",.)
+
+replace PRINPROC = subinstr(PRINPROC, ".", "",.)
+
+order PRINPROC OTHPROC1 OTHPROC2 OTHPROC3 OTHPROC4 OTHPROC5 OTHPROC6 OTHPROC7 OTHPROC8 OTHPROC9 OTHPROC10 OTHPROC11 OTHPROC12 OTHPROC13 OTHPROC14 OTHPROC15 OTHPROC16 OTHPROC17 OTHPROC18 OTHPROC19 OTHPROC20 OTHPROC21 OTHPROC22 OTHPROC23 OTHPROC24 OTHPROC25 OTHPROC26 OTHPROC27 OTHPROC28 OTHPROC29 OTHPROC30, first 
+	
+isid SYS_RECID, sort
+gen CCIcat = . 
+replace CCIcat = 0 if  CCI == 0
+replace CCIcat = 1 if  CCI == 1
+replace CCIcat = 2 if  CCI >= 2 
+
+drop if AGE<18
+drop if AGE==.
+drop if AGE==777
+drop if AGE==999
+
+
+tab ADM_PRIOR
+
+keep if ADM_PRIOR == "3" 
+
+tab DISCHSTAT
+save "file path", replace 
