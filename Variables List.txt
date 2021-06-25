@@ -1,0 +1,86 @@
+List of variables and breakdown 
+	
+Comorbidities 			12
+Post op Complications		14
+Other Patient factors		8
+Hospital Factors		13
+	
+Totals Vars used for modelling	47
+
+*******************************************************************************************
+*Total 13 Comorbidity Factors inlcuding Charlson Comorbidity Index
+
+Charlson Comorbidity Index 
+Comorbidities & Post Op Complications
+Comorbidity_Myocardial infraction
+Comorbidity_Congestive Heart Failure
+Comorbidity_Peripheral Vascular Disease 
+Comorbidity_Stroke 
+Comorbidity_Mild Liver Condition
+Comorbidity_Diabetes Without Chronic Complications
+Comorbidity_Diabetes With Chronic Complications
+Comorbidity_Renal disease
+Comorbidity_Cancer disease
+Comorbidity_Metastic Solid Tumor
+Comorbidity_Chronic Pulmonary Disease (removed from modeling during stepwise elimination)
+Comorbidity_Rheumatic (removed from modeling during stepwise elimination)
+*******************************************************************************************
+*Total 13 Comorbidity Post operative Complication Factors 
+
+Post Op Asthma
+Post Op Pleural Effusion
+Post Op Respiratory Failure
+Post Op Phlebitis Thrombophlebitis
+Post Op Cardiac Arrythmia
+Post Op Sepsis
+Post Op Urinary Tract Infection
+Post Op Malnutrition
+Post Op Other Fluid Disorders
+Post Op Severe Stress
+Post Op Acute Renal Failure 
+Post Op Pneumonia (removed from modeling during stepwise elimination)
+Post Op Congnition Diffculty (removed from modeling during stepwise elimination)
+
+*******************************************************************************************
+*Other Patient Factors (8 factors)
+
+Age Categories
+Length of Stay 
+Weekend Admission
+Admission Source
+Ethnicity 
+Race
+Gender (removed from modeling during stepwise elimination)
+Payer Type (removed from modeling during stepwise elimination)
+
+*******************************************************************************************
+* Hospital Factors (from FL AHCA & Hospital Compare Database)
+
+Total Discharges 
+Hospital Type(FL AHCA)
+Hospital maintains Emergency Services
+Hospital Star Ratings
+Hospital Safety of Care Comparison 
+Hospital Readmssion Comparison 
+Hospital Care Effectiveness Comparison 
+Hospital Effecgive use of Medical Imaging Compariosn 
+
+Hospital Ownership (removed from modeling during stepwise elimination)
+Hospital Type(Hospital Compare) (removed from modeling during stepwise elimination)
+Hospital Mortality Comparison Compariosn (removed from modeling during stepwise elimination)
+Hospital Patient Experience Compariosn (removed from modeling during stepwise elimination)
+Hospital Care Timeliness Compariosn (removed from modeling during stepwise elimination)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
